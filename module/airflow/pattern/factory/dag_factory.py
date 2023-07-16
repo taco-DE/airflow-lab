@@ -72,7 +72,8 @@ class DAGFactory:
             "on_success": self._on_success_callback,
         }
 
-    def _build_defualt_args_for_task(self, task_args) -> dict:
+    @staticmethod
+    def _build_defualt_args_for_task(task_args) -> dict:
         args = {
             "retries": 0,
             "retry_delay": timedelta(minutes=1),
