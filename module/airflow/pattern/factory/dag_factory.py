@@ -3,10 +3,17 @@ from dataclasses import dataclass
 import inspect
 import os.path
 from datetime import timedelta, datetime
+from typing import Callable
 
 import pendulum
 from airflow import DAG
 from pendulum.tz.timezone import Timezone
+from module.airflow.handler.slack import (
+    success_callback_slack_handler,
+    failure_callback_slack_handler,
+)
+
+CALLBACK_LIST = ["sla_miss", "on_success", "on_failure"]
 
 
 @dataclass
@@ -53,39 +60,65 @@ class DAGFactory:
         self._max_active_tasks = 3
         self._description = None
         self._dagrun_timeout = None
-        self._on_success_callback = None
-        self._on_failure_callback =
+        self._render_template_as_native_obj = True
+        self._owner_links = None
 
+        self._on_success_callback = None
+        self._on_failure_callback = [failure_callback_slack_handler]
+        self._sla_miss_callback = None
+        self._callback_name_to_object = {
+            "sla_miss": self._sla_miss_callback,
+            "on_failure": self._on_failure_callback,
+            "on_success": self._on_success_callback,
+        }
 
     def _build_defualt_args_for_task(self, task_args) -> dict:
         args = {
             "retries": 0,
-            "retry_delay": timedelta(minute=1),
+            "retry_delay": timedelta(minutes=1),
         }
         if task_args:
             args.update(task_args)
 
         return args
 
-    def description(self, desc: str):
+    def description(self, desc: str) -> object:
         self._description = desc
 
         return self
 
-    def max_active_runs(self, run_cnt: int):
-        self._max_active_runs
+    def max_active_runs(self, run_cnt: int) -> object:
+        self._max_active_runs = run_cnt
 
         return self
 
-    def dagrun_timeout(self, time: timedelta):
+    def max_active_tasks(self, task_cnt: int) -> object:
+        self._max_active_tasks = task_cnt
+
+        return self
+
+    def owner_links(self, owners: dict) -> object:
+        self._owner_links = owners
+
+        return self
+
+    def dagrun_timeout(self, time: timedelta) -> object:
         self._dagrun_timeout = time
 
         return self
 
-    def activate_success_callback(self):
-        self._on_success_callback =
+    def activate_success_callback(self) -> object:
+        self._on_success_callback = success_callback_slack_handler
 
         return self
+
+    def append_callback(self, callback_name: str, func: Callable) -> None:
+        if callback_name.lower() not in CALLBACK_LIST:
+            raise ValueError(f"[{callback_name}] is not available callback name.")
+
+        [func] if self._callback_name_to_object[
+            callback_name
+        ] is None else self._callback_name_to_object[callback_name].append(func)
 
     def build_dag(self) -> DAG:
         return DAG(
@@ -100,7 +133,7 @@ class DAGFactory:
             max_active_runs=self._max_active_runs,
             dagrun_timeout=self._dagrun_timeout,
             on_success_callback=self._on_success_callback,
-            on_failure_callback=self.on_failure_callback,
+            on_failure_callback=self._on_failure_callback,
             doc_md=self._doc_md,
             render_template_as_native_obj=self._render_template_as_native_obj,
             tags=self._tags,
