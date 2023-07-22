@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "airflow-lab"
+version = "0.1.0"
+description = "Airflow lab repository"
+authors = ["mildsalmon <mildsalmon@gmail.com>"]
+readme = "README.md"
+
+# https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-python-libraries.html
+[tool.poetry.dependencies]
+python = "^3.10"
+pytest = "^7"
+pylint = "^2"
+black = {extras = ["d"], version = "^22"}
+pre-commit = "^2"
+apache-airflow = "2.6.3"
+boto3 = "^1"
+pandas = "^1"
+numpy = "^1"
+pyspark = "3.3.0"
+awsglue-dev = "^2021.12.30"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
