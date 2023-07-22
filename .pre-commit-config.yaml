@@ -1,0 +1,17 @@
+repos:
+  - repo: local
+    hooks:
+      - id: black
+        args: # arguments to configure black
+          - --line-length=120
+        name: black
+        entry: black
+        language: system
+        types: [python]
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
