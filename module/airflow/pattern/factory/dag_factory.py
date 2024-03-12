@@ -1,13 +1,15 @@
-from dataclasses import dataclass
+from __future__ import annotations
 
 import inspect
 import os.path
+from dataclasses import dataclass
 from datetime import timedelta, datetime
 from typing import Callable
 
 import pendulum
 from airflow import DAG
 from pendulum.tz.timezone import Timezone
+
 from module.airflow.handler.slack import (
     success_callback_slack_handler,
     failure_callback_slack_handler,
@@ -83,32 +85,32 @@ class DAGFactory:
 
         return args
 
-    def description(self, desc: str) -> object:
+    def description(self, desc: str) -> DAGFactory:
         self._description = desc
 
         return self
 
-    def max_active_runs(self, run_cnt: int) -> object:
+    def max_active_runs(self, run_cnt: int) -> DAGFactory:
         self._max_active_runs = run_cnt
 
         return self
 
-    def max_active_tasks(self, task_cnt: int) -> object:
+    def max_active_tasks(self, task_cnt: int) -> DAGFactory:
         self._max_active_tasks = task_cnt
 
         return self
 
-    def owner_links(self, owners: dict) -> object:
+    def owner_links(self, owners: dict) -> DAGFactory:
         self._owner_links = owners
 
         return self
 
-    def dagrun_timeout(self, time: timedelta) -> object:
+    def dagrun_timeout(self, time: timedelta) -> DAGFactory:
         self._dagrun_timeout = time
 
         return self
 
-    def activate_success_callback(self) -> object:
+    def activate_success_callback(self) -> DAGFactory:
         self._on_success_callback = success_callback_slack_handler
 
         return self
